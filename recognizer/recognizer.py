@@ -6,26 +6,24 @@ color = (0,0,255)
 
 cap = cv2.VideoCapture(0)
 
-playerMovement = 0
+def handlePositionPlayer(x,y,w,h,img_width,img_height):
+  nextState = ""
+  playerIsJump = ""
+  playerDirection = ""
 
-def handlePositionPlayer(x,y,w,h,img_width,img_height,actualState):
-  nextState = 100
-  if(y+h/2 < img_height*2/3):
-    nextState = 2
-  elif(y+h/2 > img_height/3):
-    nextState = 3
+  if(y+h/2 < img_height/2):
+    playerIsJump = "is going up"
+  elif(y+h/2 >= img_height/2):
+    playerIsJump = "is going down"
 
   if(x+w/2 < img_width/3):
-    nextState = -1
-  elif(x+w/2 >img_width/3 and x+w/2 < img_width*2/3):
-    nextState = 0
+    playerDirection = "to left"
+  elif(x+w/2 >=img_width/3 and x+w/2 <= img_width*2/3):
+    playerDirection = "in center"
   elif(x+w/2 > img_width*2/3):
-    nextState = 1
-
-  if(nextState == actualState):
-    return 0
-  else:
-    return nextState
+    playerDirection = "to right"
+  nextState = "the player {} and {}".format(playerIsJump,playerDirection)
+  return nextState
     
 
 while True:
@@ -41,11 +39,18 @@ while True:
   
   lineVerticalOne = [(int(img_width/3),0),(int(img_width/3),img_height)] 
   lineVerticalTwo = [(int(img_width*2/3),0),(int(img_width*2/3),img_height)] 
-  lineHorizontalOne = [(0,int(img_height/3*2)),(img_width,int(img_height/3*2))] 
+  lineHorizontalOne = [(0,int(img_height/3*1.5)),(img_width,int(img_height/3*1.5))] 
 
   # Convert to grayscale
   gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-  faces = face_cascade.detectMultiScale(gray,1.1,4)
+  facesWithoutFilter = face_cascade.detectMultiScale(gray,1.1,4)
+
+  faces = [[]]
+
+  if isinstance(facesWithoutFilter, tuple):
+    faces = facesWithoutFilter
+  else:
+    faces[0] = facesWithoutFilter[0]
 
   # Draw lines
   for (x,y,w,h) in faces:
@@ -57,7 +62,7 @@ while True:
     cv2.putText(img,"{} , {}".format(str(x+w),str(y+h)),(x+w,y+h), cv2.FONT_HERSHEY_SIMPLEX, 0.5,color, 2)
 
     # Get player movement
-    playerMovement = handlePositionPlayer(x,y,w,h,img_width,img_height,playerMovement)
+    playerMovement = handlePositionPlayer(x,y,w,h,img_width,img_height)
 
     # Show the player movement
     print(playerMovement)

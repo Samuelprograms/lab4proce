@@ -32,8 +32,7 @@ for image in images:
     ret, corners = cv.findChessboardCorners(gray, chessboardSize, None)
 
     # If found, add object points, image points (after refining them)
-    if ret == True:
-
+    if ret:
         objpoints.append(objp)
         corners2 = cv.cornerSubPix(gray, corners, (11,11), (-1,-1), criteria)
         imgpoints.append(corners)
