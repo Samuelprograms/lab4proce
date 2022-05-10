@@ -2,7 +2,8 @@ import numpy as np
 import cv2 as cv
 import glob
 
-################ FIND CHESSBOARD CORNERS - OBJECT POINTS AND IMAGE POINTS #############################
+# Initialize the video capture
+cap = cv.VideoCapture(0)
 
 chessboardSize = (24,17)
 frameSize = (1440,1080)
@@ -24,13 +25,9 @@ imgpoints = [] # 2d points in image plane.
 images = glob.glob('*.png')
 
 for image in images:
-
     img = cv.imread(image)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-
-    # Find the chess board corners
     ret, corners = cv.findChessboardCorners(gray, chessboardSize, None)
-
     # If found, add object points, image points (after refining them)
     if ret:
         objpoints.append(objp)
@@ -44,45 +41,61 @@ for image in images:
 
 cv.destroyAllWindows()
 
-############## CALIBRATION #######################################################
+# Calibrate the camera using the object points and image points
 
-ret, cameraMatrix, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, frameSize, None, None)
+_,cameraMatrix, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, frameSize, None, None)
 
-print("Camera calibrated: ",ret)
 print("Camera matrix: \n",cameraMatrix)
 print("\nDistortion parameters: \n ",dist)
 print("\nRotation vectors: \n ",rvecs)
 print("\nTranslation vectors: \n ",tvecs)
 
-############## UNDISTORTION #####################################################
+# Read the image of the video capture constantly
+while True:
 
-img = cv.imread('imageToCalibrate.png')
-h,  w = img.shape[:2]
-newCameraMatrix, roi = cv.getOptimalNewCameraMatrix(cameraMatrix, dist, (w,h), 1, (w,h))
+    # Get the image
+    _,img = cap.read()
 
-# Undistort
-dst = cv.undistort(img, cameraMatrix, dist, None, newCameraMatrix)
+    # Flip the image
+    img = cv.flip(img,1)
 
-# crop the image
-x, y, w, h = roi
-dst = dst[y:y+h, x:x+w]
-cv.imwrite('result1.png', dst)
+    # Get the dimensions of the image
+    h,  w = img.shape[:2]
 
-# Undistort with Remapping
-mapx, mapy = cv.initUndistortRectifyMap(cameraMatrix, dist, None, newCameraMatrix, (w,h), 5)
-dst = cv.remap(img, mapx, mapy, cv.INTER_LINEAR)
+    # Get the camera matrix and distortion coefficients
+    newCameraMatrix, roi = cv.getOptimalNewCameraMatrix(cameraMatrix, dist, (w,h), 1, (w,h))
 
-# crop the image
-x, y, w, h = roi
-dst = dst[y:y+h, x:x+w]
-cv.imwrite('result2.png', dst)
+    # Undistort
+    dst = cv.undistort(img, cameraMatrix, dist, None, newCameraMatrix)
 
-# Reprojection Error
-mean_error = 0
+    # crop the image
+    x, y, w, h = roi
+    dst = dst[y:y+h, x:x+w]
 
-for i in range(len(objpoints)):
-    imgpoints2, _ = cv.projectPoints(objpoints[i], rvecs[i], tvecs[i], cameraMatrix, dist)
-    error = cv.norm(imgpoints[i], imgpoints2, cv.NORM_L2)/len(imgpoints2)
-    mean_error += error
+    # Undistort with Remapping
+    mapx, mapy = cv.initUndistortRectifyMap(cameraMatrix, dist, None, newCameraMatrix, (w,h), 5)
+    dst = cv.remap(img, mapx, mapy, cv.INTER_LINEAR)
 
-print( "total error: {}".format(mean_error/len(objpoints)) )
+    # crop the image
+    x, y, w, h = roi
+    dst = dst[y:y+h, x:x+w]
+
+    # Reprojection Error
+    mean_error = 0
+
+    for i in range(len(objpoints)):
+        imgpoints2, _ = cv.projectPoints(objpoints[i], rvecs[i], tvecs[i], cameraMatrix, dist)
+        error = cv.norm(imgpoints[i], imgpoints2, cv.NORM_L2)/len(imgpoints2)
+        mean_error += error
+
+    error =  "total error: {}".format(mean_error/len(objpoints))
+
+    # Display the image
+    cv.imshow("img",dst)
+
+    # Code to get outta loop
+    k = cv.waitKey(1)
+    if k == 27:
+        break
+
+cap.release()
