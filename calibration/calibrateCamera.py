@@ -37,18 +37,24 @@ for image in images:
         # Draw and display the corners
         cv.drawChessboardCorners(img, chessboardSize, corners2, ret)
         cv.imshow('img', img)
-        cv.waitKey(1000)
+        cv.waitKey(300)
 
 cv.destroyAllWindows()
 
-# Calibrate the camera using the object points and image points
-
+#Calibrate the camera using the object points and image points
 _,cameraMatrix, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, frameSize, None, None)
 
 print("Camera matrix: \n",cameraMatrix)
 print("\nDistortion parameters: \n ",dist)
 print("\nRotation vectors: \n ",rvecs)
 print("\nTranslation vectors: \n ",tvecs)
+
+with open("cameraParameters.csv", "w") as csvfile:
+    spamwriter = csv.writer(csvfile, delimiter=',')
+    spamwriter.writerow(['cameraMatrix',"dist", "rvecs", "tvecs"])
+    spamwriter.writerow([cameraMatrix,dist, rvecs, tvecs])
+
+    
 
 # Read the image of the video capture constantly
 while True:
