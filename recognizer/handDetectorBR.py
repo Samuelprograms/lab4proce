@@ -1,3 +1,6 @@
+import sys
+sys.path.append('C:/Users/Wilder Taborda/Desktop/universidad/lab4proce/playerMovement')
+from getPlayerMovement import handlePositionPlayer
 import numpy as np
 import cv2
 import mediapipe as mp
@@ -5,7 +8,6 @@ import mediapipe as mp
 mphands = mp.solutions.hands
 hands = mphands.Hands()
 mp_drawing = mp.solutions.drawing_utils
-
 windowName = "Hand detector"
 windowNameWithRemoval = "Hand detector with background removal"
 cap = cv2.VideoCapture(0)
@@ -13,6 +15,7 @@ fgbg = cv2.createBackgroundSubtractorMOG2()
 color = (255, 255, 255)
 _, frame = cap.read()
 h, w, c = frame.shape
+
 while True:
   _,frame = cap.read()
   frame = cv2.flip(frame, 1)
