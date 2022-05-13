@@ -16,7 +16,7 @@ while True:
     img = cv.flip(img,1)
     h,  w = img.shape[:2]
     img = calibrate(img, cameraMatrix, dist,w,h)
-    cv.imshow("img",img)
+    # cv.imshow("img",img)
     k = cv.waitKey(1)
     if k == 27:
         break
