@@ -14,10 +14,12 @@ color = (0,0,255)
 window_name = "Hand Detector"
 h, w, c = frame.shape
 
-# try:
-#     serialConnection = serial.Serial('COM2', 9600)
-# except:
-#     print('Communication failed')
+serialConnection = None
+
+try:
+    serialConnection = serial.Serial('COM4', 9600)
+except:
+    print('Communication failed')
 
 while True:
     _, frame = cap.read()
@@ -53,9 +55,8 @@ while True:
             cv2.putText(frame,"{} , {}".format(str(x_max),str(y_max)),(x_max,y_max), cv2.FONT_HERSHEY_SIMPLEX, 0.5,color, 2)
             cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
             playerMovement = handlePositionPlayer(x_min,y_min,x_max,y_max,img_width,img_height)
-            # serialConnection.write(playerMovement)
-            print(playerMovement)
-
+            if serialConnection.is_open:
+                serialConnection.write(playerMovement)
     cv2.imshow(window_name, frame)
     k = cv2.waitKey(1)
     if k == 27:

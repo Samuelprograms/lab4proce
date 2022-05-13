@@ -14,5 +14,10 @@ def handlePositionPlayer(x_min,y_min,x_max,y_max,img_width,img_height):
     playerDirection = 0
   elif(mean_x > img_width*2/3):
     playerDirection = 2
+
+  if(playerIsJump == 3):
+    return playerIsJump
+  else:
+    return playerDirection
+    
   # nextState = "the player {} and {}".format(playerIsJump,playerDirection)
-  return playerDirection
